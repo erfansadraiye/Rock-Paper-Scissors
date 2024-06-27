@@ -4,7 +4,7 @@ import urllib.request
 import numpy as np
 import tkinter as tk
 from tkinter import font as tkfont
-
+from tkinter import messagebox
 import cv2
 from PIL import Image, ImageTk
 
@@ -36,19 +36,20 @@ def select_winner(result):
 
 
 def get_low_photo():
-    image_url = "http://172.20.10.6/cam-lo.jpg"
-    img_response = urllib.request.urlopen(image_url)
-    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    img = cv2.imdecode(imgnp, -1)
-    return img
+    # image_url = "http://172.20.10.6/cam-lo.jpg"
+    # img_response = urllib.request.urlopen(image_url)
+    # imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+    # img = cv2.imdecode(imgnp, -1)
+    # return img
+    return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
 
 
 def get_high_photo():
-    image_url = "http://172.20.10.6/cam-hi.jpg"
-    img_response = urllib.request.urlopen(image_url)
-    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    img = cv2.imdecode(imgnp, -1)
-    return img
+    # image_url = "http://172.20.10.6/cam-hi.jpg"
+    # img_response = urllib.request.urlopen(image_url)
+    # imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+    # imgcv2 = cv2.imdecode(imgnp, -1)
+    return cv2.imread('cam-hi.jpg')
 
 
 class RockPaperScissorsApp:
@@ -117,9 +118,9 @@ class RockPaperScissorsApp:
             self.update_user_list()
             self.entry.delete(0, tk.END)
         elif username in self.registered_users:
-            tk.messagebox.showerror("Error", "Username already registered.")
+            messagebox.showerror("Error", "Username already registered.")
         else:
-            tk.messagebox.showerror("Error", "Please enter a username.")
+            messagebox.showerror("Error", "Please enter a username.")
 
     def unregister_user(self):
         username = self.entry.get().strip()
@@ -128,7 +129,7 @@ class RockPaperScissorsApp:
             self.update_user_list()
             self.entry.delete(0, tk.END)
         else:
-            tk.messagebox.showerror("Error", "Username not found.")
+            messagebox.showerror("Error", "Username not found.")
 
     def update_user_list(self):
         self.user_listbox.delete(0, tk.END)
@@ -137,7 +138,7 @@ class RockPaperScissorsApp:
 
     def start_game(self):
         if len(self.registered_users) < 3:
-            tk.messagebox.showerror("Error", "At least 3 players are required to start the game.")
+            messagebox.showerror("Error", "At least 3 players are required to start the game.")
         else:
             self.game_index = 0
             self.winners = []
@@ -171,7 +172,7 @@ class RockPaperScissorsApp:
     def play_game(self, player1, player2):
         play_game_window = tk.Toplevel(self.root)
         play_game_window.title("Game")
-        play_game_window.geometry("600x600")
+        play_game_window.geometry("1024x768")
 
         game_label = tk.Label(play_game_window, text=f"{player1} vs {player2}", font=self.label_font)
         game_label.pack(pady=5)
@@ -193,6 +194,15 @@ class RockPaperScissorsApp:
         photo_label = tk.Label(play_game_window)
         photo_label.pack(pady=5)
 
+        left_image_label = tk.Label(play_game_window)
+        left_image_label.pack(side=tk.LEFT, padx=10)
+
+        vs_label = tk.Label(play_game_window, text="VS", font=self.label_font)
+        vs_label.pack(side=tk.LEFT, padx=10)
+
+        right_image_label = tk.Label(play_game_window)
+        right_image_label.pack(side=tk.LEFT, padx=10)
+
         self.update_photo_flag = True  # Initialize the flag
 
         def retry():
@@ -205,7 +215,7 @@ class RockPaperScissorsApp:
             if not self.update_photo_flag:
                 return
             try:
-                photo = cv2.resize(get_low_photo(), (360, 240))
+                photo = get_low_photo()
                 photo = cv2.cvtColor(photo, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(photo)
                 imgtk = ImageTk.PhotoImage(image=img)
@@ -232,7 +242,19 @@ class RockPaperScissorsApp:
             imgtk = ImageTk.PhotoImage(image=img)
             photo_label.config(image=imgtk)
             photo_label.image = imgtk  # Keep a reference to avoid garbage collection
-            result = recognize_images(saved_image)
+            result, images = recognize_images(saved_image)
+            left_image, right_image = images
+            # Display left and right images
+            left_img = Image.fromarray(cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB))
+            left_imgtk = ImageTk.PhotoImage(image=left_img)
+            left_image_label.config(image=left_imgtk)
+            left_image_label.image = left_imgtk
+
+            right_img = Image.fromarray(cv2.cvtColor(right_image, cv2.COLOR_BGR2RGB))
+            right_imgtk = ImageTk.PhotoImage(image=right_img)
+            right_image_label.config(image=right_imgtk)
+            right_image_label.image = right_imgtk
+
             winner = select_winner(result)
             if winner == 0:
                 outcome_label.config(text=f"{player1} vs {player2}: Draw!")
