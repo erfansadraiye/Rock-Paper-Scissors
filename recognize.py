@@ -94,6 +94,13 @@ def recognize_images(image):
     return (left_pos, right_pos), (left_image, right_image)
 
 if __name__ == '__main__':
-    image_path = 'cam-hi.jpg'
-    img = cv2.imread(image_path)
-    print(recognize_images(img))
+    image_paths = [
+        'cam-hi1.jpg',
+        'cam-hi2.jpg',
+        'cam-hi3.jpg',
+        'cam-hi4.jpg',
+        'cam-hi5.jpg',
+    ]
+    for image_path in image_paths:
+        img = cv2.imread(image_path)
+        print(recognize_images(img)[0])
