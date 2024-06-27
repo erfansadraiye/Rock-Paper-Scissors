@@ -36,19 +36,10 @@ def select_winner(result):
 
 
 def get_low_photo():
-    # image_url = "http://172.20.10.6/cam-lo.jpg"
-    # img_response = urllib.request.urlopen(image_url)
-    # imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    # img = cv2.imdecode(imgnp, -1)
-    # return img
     return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
 
 
 def get_high_photo():
-    # image_url = "http://172.20.10.6/cam-hi.jpg"
-    # img_response = urllib.request.urlopen(image_url)
-    # imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    # imgcv2 = cv2.imdecode(imgnp, -1)
     return cv2.imread('cam-hi.jpg')
 
 
@@ -207,6 +198,9 @@ class RockPaperScissorsApp:
 
         def retry():
             countdown_label.config(text="5")
+            vs_label.pack_forget()
+            left_image_label.pack_forget()
+            right_image_label.pack_forget()
             if self.update_photo_flag != True:
                 self.update_photo_flag = True
                 update_photo()
@@ -243,17 +237,22 @@ class RockPaperScissorsApp:
             photo_label.config(image=imgtk)
             photo_label.image = imgtk  # Keep a reference to avoid garbage collection
             result, images = recognize_images(saved_image)
-            left_image, right_image = images
-            # Display left and right images
-            left_img = Image.fromarray(cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB))
-            left_imgtk = ImageTk.PhotoImage(image=left_img)
-            left_image_label.config(image=left_imgtk)
-            left_image_label.image = left_imgtk
+            if len(images) == 2:
+                left_image, right_image = images
+                # Display left and right images
+                left_img = Image.fromarray(cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB))
+                left_imgtk = ImageTk.PhotoImage(image=left_img)
+                left_image_label.config(image=left_imgtk)
+                left_image_label.image = left_imgtk
 
-            right_img = Image.fromarray(cv2.cvtColor(right_image, cv2.COLOR_BGR2RGB))
-            right_imgtk = ImageTk.PhotoImage(image=right_img)
-            right_image_label.config(image=right_imgtk)
-            right_image_label.image = right_imgtk
+                right_img = Image.fromarray(cv2.cvtColor(right_image, cv2.COLOR_BGR2RGB))
+                right_imgtk = ImageTk.PhotoImage(image=right_img)
+                right_image_label.config(image=right_imgtk)
+                right_image_label.image = right_imgtk
+
+                vs_label.pack(side=tk.LEFT, padx=10)
+                left_image_label.pack(side=tk.LEFT, padx=10)
+                right_image_label.pack(side=tk.LEFT, padx=10)
 
             winner = select_winner(result)
             if winner == 0:
