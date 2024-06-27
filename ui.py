@@ -41,27 +41,27 @@ def select_winner(result):
     return -1
 
 
-# def get_low_photo():
-#     image_url = "http://172.20.10.6/cam-lo.jpg"
-#     img_response = urllib.request.urlopen(image_url)
-#     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-#     img = cv2.imdecode(imgnp, -1)
-#     return img
-#
-#
-# def get_high_photo():
-#     image_url = "http://172.20.10.6/cam-hi.jpg"
-#     img_response = urllib.request.urlopen(image_url)
-#     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-#     img = cv2.imdecode(imgnp, -1)
-#     return img
-
 def get_low_photo():
-    return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
+    image_url = "http://172.20.10.6/cam-lo.jpg"
+    img_response = urllib.request.urlopen(image_url)
+    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+    img = cv2.imdecode(imgnp, -1)
+    return img
 
 
 def get_high_photo():
-    return cv2.imread('cam.jpg')
+    image_url = "http://172.20.10.6/cam-hi.jpg"
+    img_response = urllib.request.urlopen(image_url)
+    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+    img = cv2.imdecode(imgnp, -1)
+    return img
+
+#def get_low_photo():
+#    return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
+
+
+#def get_high_photo():
+#   return cv2.imread('cam.jpg')
 
 class RockPaperScissorsApp:
     def __init__(self, root):
@@ -124,7 +124,7 @@ class RockPaperScissorsApp:
         self.start_flask_thread()
 
     def start_flask_thread(self):
-        flask_thread = threading.Thread(target=app.run, kwargs={'port': 5000, 'use_reloader': False})
+        flask_thread = threading.Thread(target=app.run, kwargs={'port': 5000, 'host' : '0.0.0.0' ,'use_reloader': False})
         flask_thread.daemon = True
         flask_thread.start()
 
