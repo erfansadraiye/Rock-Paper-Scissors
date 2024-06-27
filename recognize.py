@@ -49,10 +49,10 @@ def recognize_images(image):
     left_rotated_image = cv2.rotate(left_image, cv2.ROTATE_90_COUNTERCLOCKWISE)
     right_rotated_image = cv2.rotate(right_image, cv2.ROTATE_90_CLOCKWISE)
 
-    plt.imshow(left_rotated_image)
-    plt.show()
-    plt.imshow(right_rotated_image)
-    plt.show()
+    # plt.imshow(left_rotated_image)
+    # plt.show()
+    # plt.imshow(right_rotated_image)
+    # plt.show()
 
     detector = HandDetector(maxHands=1)
     hands, img = detector.findHands(left_rotated_image)
@@ -87,11 +87,11 @@ def recognize_images(image):
     
     if np.sum(left_fingers) == -5:
         left_pos = 'NA'
-        return []
+        return [], []
     if np.sum(right_fingers) == -5:
         right_pos = 'NA'
-        return []
-    return left_pos, right_pos
+        return [], []
+    return (left_pos, right_pos), (left_image, right_image)
 
 if __name__ == '__main__':
     image_path = 'cam-hi.jpg'
