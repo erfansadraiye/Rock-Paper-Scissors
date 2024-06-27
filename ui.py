@@ -161,6 +161,7 @@ class RockPaperScissorsApp:
             self.game_index = 0
             self.winners = []
             self.allwinners = []
+
             self.current_players = self.registered_users.copy()
             self.open_game_window(self.current_players)
 
@@ -320,7 +321,6 @@ class RockPaperScissorsApp:
         tree_window.geometry("1024x768")
         self.create_elimination_tree(tree_window, players, winners)
 
-
     def create_elimination_tree(self, parent, players, winners):
         num_players = len(players)
         num_rounds = math.ceil(math.log2(num_players))
@@ -328,9 +328,6 @@ class RockPaperScissorsApp:
         bracket_frame.pack(pady=20)
 
         current_players = players.copy()
-        all_round_winners = [current_players]  # Initialize with the first round players
-        print(players)
-
         for round_num in range(num_rounds):
             round_frame = tk.Frame(bracket_frame)
             round_frame.pack(side=tk.LEFT, padx=20)
@@ -339,8 +336,6 @@ class RockPaperScissorsApp:
             round_label.pack()
 
             next_round_players = []
-            current_players = all_round_winners[round_num]
-
             for i in range(0, len(current_players), 2):
                 match_frame = tk.Frame(round_frame)
                 match_frame.pack(pady=10)
@@ -360,35 +355,23 @@ class RockPaperScissorsApp:
                     player2_label.pack()
 
                 if round_num == 0:
-                    if current_players[i] in winners :
+                    if current_players[i] in self.allwinners:
                         next_round_players.append(current_players[i])
-                    elif current_players[i+1] in winners :
+                    elif current_players[i+1] in self.allwinners:
                         next_round_players.append(current_players[i+1])
                     else:
                         next_round_players.append(
                             f"Winner of {current_players[i]} vs {current_players[i + 1] if i + 1 < len(current_players) else 'Bye'}")
                 else:
-                    if current_players[i] in winners:
-                        next_round_players.append(current_players[i])
-                    elif i + 1 < len(current_players) and current_players[i + 1] in winners:
-                        next_round_players.append(current_players[i + 1])
-                    else:
-                        next_round_players.append(
-                            f"Winner of {current_players[i]} vs {current_players[i + 1] if i + 1 < len(current_players) else 'Bye'}")
+                    next_round_players.append(winners.pop(
+                        0) if winners else f"Winner of {current_players[i]} vs {current_players[i + 1] if i + 1 < len(current_players) else 'Bye'}")
 
-            all_round_winners.append(next_round_players)
+            current_players = next_round_players
 
         final_label = tk.Label(bracket_frame, text="Final Winner", font=self.title_font)
         final_label.pack(side=tk.LEFT, padx=20)
 
 
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = RockPaperScissorsApp(root)
-    root.geometry("800x600")
-    root.mainloop()
-=======
 @app.route('/start_countdown', methods=['POST'])
 def start_countdown():
     app.current_countdown(5)
@@ -399,4 +382,3 @@ root = tk.Tk()
 app = RockPaperScissorsApp(root)
 root.geometry("800x600")
 root.mainloop()
->>>>>>> 7fcdd3195190056fd4125388521b239d58c61357
