@@ -10,6 +10,12 @@ from PIL import Image, ImageTk
 
 from recognize import recognize_images
 
+import threading
+from flask import Flask, jsonify
+
+# Initialize Flask app
+app = Flask(__name__)
+
 SCISSORS = 'scissors'
 ROCK = 'rock'
 PAPER = 'paper'
@@ -35,13 +41,27 @@ def select_winner(result):
     return -1
 
 
+# def get_low_photo():
+#     image_url = "http://172.20.10.6/cam-lo.jpg"
+#     img_response = urllib.request.urlopen(image_url)
+#     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+#     img = cv2.imdecode(imgnp, -1)
+#     return img
+#
+#
+# def get_high_photo():
+#     image_url = "http://172.20.10.6/cam-hi.jpg"
+#     img_response = urllib.request.urlopen(image_url)
+#     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+#     img = cv2.imdecode(imgnp, -1)
+#     return img
+
 def get_low_photo():
     return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
 
 
 def get_high_photo():
-    return cv2.imread('cam-hi.jpg')
-
+    return cv2.imread('cam.jpg')
 
 class RockPaperScissorsApp:
     def __init__(self, root):
@@ -101,6 +121,13 @@ class RockPaperScissorsApp:
         self.start_button.place(relx=0.5, rely=0.85, anchor='n', relwidth=0.3, relheight=0.1)
 
         self.registered_users = ['q', 'b', 'c', 'd']
+        self.start_flask_thread()
+
+    def start_flask_thread(self):
+        flask_thread = threading.Thread(target=app.run, kwargs={'port': 5000, 'use_reloader': False})
+        flask_thread.daemon = True
+        flask_thread.start()
+
 
     def register_user(self):
         username = self.entry.get().strip()
@@ -175,10 +202,6 @@ class RockPaperScissorsApp:
         countdown_label = tk.Label(play_game_window, text="5", font=self.label_font)
         countdown_label.pack(pady=5)
 
-        trigger_button = tk.Button(play_game_window, text="Trigger Outcome", command=lambda: countdown(5), bg="#007BFF",
-                                   fg="white", font=self.button_font)
-        trigger_button.pack(pady=5)
-
         retry_button = tk.Button(play_game_window, text="Retry", command=lambda: retry(), bg="#007BFF",
                                  fg="white", font=self.button_font)
         retry_button.pack(pady=5)
@@ -237,6 +260,9 @@ class RockPaperScissorsApp:
             imgtk = ImageTk.PhotoImage(image=img)
             photo_label.config(image=imgtk)
             photo_label.image = imgtk  # Keep a reference to avoid garbage collection
+
+            outcome_label.config(text=f"Processing...")
+
             result, images = recognize_images(saved_image)
             if len(images) == 2:
                 left_image, right_image = images
@@ -269,6 +295,8 @@ class RockPaperScissorsApp:
                 outcome_label.config(text="Image was not good. Please try again...")
 
         update_photo()
+        self.current_countdown = countdown
+
 
     def update_main_game_window(self):
         if self.game_index < len(self.current_players) - 1:
@@ -360,3 +388,15 @@ if __name__ == "__main__":
     app = RockPaperScissorsApp(root)
     root.geometry("800x600")
     root.mainloop()
+=======
+@app.route('/start_countdown', methods=['POST'])
+def start_countdown():
+    app.current_countdown(5)
+    return jsonify({'status': 'countdown started'})
+
+
+root = tk.Tk()
+app = RockPaperScissorsApp(root)
+root.geometry("800x600")
+root.mainloop()
+>>>>>>> 7fcdd3195190056fd4125388521b239d58c61357
