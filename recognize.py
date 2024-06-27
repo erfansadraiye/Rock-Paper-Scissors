@@ -56,8 +56,15 @@ def recognize_images(image):
 
     detector = HandDetector(maxHands=1)
     hands, img = detector.findHands(left_rotated_image)
-    left_fingers = detector.fingersUp(hands[0])
+    if len(hands) == 0:
+        print('Error in catching left hand')
+        left_fingers = [-1,-1,-1,-1,-1]
+    else:
+        left_fingers = detector.fingersUp(hands[0])
     hands, img = detector.findHands(right_rotated_image)
+    if len(hands) == 0:
+        print('Error in catching right hand')
+        right_fingers = [-1,-1,-1,-1,-1]
     right_fingers = detector.fingersUp(hands[0])
 
     left_pos = None
@@ -77,9 +84,13 @@ def recognize_images(image):
         left_pos = 'paper'
     if np.sum(right_fingers) == 4 or np.sum(right_fingers) == 5:
         right_pos = 'paper'
+    
+    if np.sum(left_fingers) == -5:
+        left_pos = 'NA'
+    if np.sum(right_fingers) == -5:
+        right_pos = 'NA'
 
     return left_pos, right_pos
-
 
 if __name__ == '__main__':
     image_path = 'cam-hi.jpg'
