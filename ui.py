@@ -36,20 +36,19 @@ def select_winner(result):
 
 
 def get_low_photo():
-    # image_url = "http://172.20.10.6/cam-lo.jpg"
-    # img_response = urllib.request.urlopen(image_url)
-    # imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    # img = cv2.imdecode(imgnp, -1)
-    # return img
-    return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
+    image_url = "http://172.20.10.6/cam-lo.jpg"
+    img_response = urllib.request.urlopen(image_url)
+    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+    img = cv2.imdecode(imgnp, -1)
+    return img
 
 
 def get_high_photo():
-    # image_url = "http://172.20.10.6/cam-hi.jpg"
-    # img_response = urllib.request.urlopen(image_url)
-    # imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    # imgcv2 = cv2.imdecode(imgnp, -1)
-    return cv2.imread('cam-hi.jpg')
+    image_url = "http://172.20.10.6/cam-hi.jpg"
+    img_response = urllib.request.urlopen(image_url)
+    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+    img = cv2.imdecode(imgnp, -1)
+    return img
 
 
 class RockPaperScissorsApp:
@@ -206,7 +205,7 @@ class RockPaperScissorsApp:
             if not self.update_photo_flag:
                 return
             try:
-                photo = get_low_photo()
+                photo = cv2.resize(get_low_photo(), (360, 240))
                 photo = cv2.cvtColor(photo, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(photo)
                 imgtk = ImageTk.PhotoImage(image=img)
