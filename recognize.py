@@ -87,9 +87,10 @@ def recognize_images(image):
     
     if np.sum(left_fingers) == -5:
         left_pos = 'NA'
+        return []
     if np.sum(right_fingers) == -5:
         right_pos = 'NA'
-
+        return []
     return left_pos, right_pos
 
 if __name__ == '__main__':
