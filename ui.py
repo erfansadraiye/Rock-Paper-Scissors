@@ -44,9 +44,9 @@ def select_winner(result):
         return 2
     return -1
 
-
+base_image_url = "http://172.27.52.230"
 def get_low_photo():
-    image_url = "http://172.20.10.6/cam-lo.jpg"
+    image_url = f"{base_image_url}/cam-lo.jpg"
     img_response = urllib.request.urlopen(image_url)
     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
     img = cv2.imdecode(imgnp, -1)
@@ -54,7 +54,7 @@ def get_low_photo():
 
 
 def get_high_photo():
-    image_url = "http://172.20.10.6/cam-hi.jpg"
+    image_url = f"{base_image_url}/cam-hi.jpg"
     img_response = urllib.request.urlopen(image_url)
     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
     img = cv2.imdecode(imgnp, -1)
