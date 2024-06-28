@@ -41,27 +41,27 @@ def select_winner(result):
     return -1
 
 
+# def get_low_photo():
+#     image_url = "http://172.20.10.6/cam-lo.jpg"
+#     img_response = urllib.request.urlopen(image_url)
+#     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+#     img = cv2.imdecode(imgnp, -1)
+#     return img
+
+
+# def get_high_photo():
+#     image_url = "http://172.20.10.6/cam-hi.jpg"
+#     img_response = urllib.request.urlopen(image_url)
+#     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+#     img = cv2.imdecode(imgnp, -1)
+#     return img
+
 def get_low_photo():
-    image_url = "http://172.20.10.6/cam-lo.jpg"
-    img_response = urllib.request.urlopen(image_url)
-    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    img = cv2.imdecode(imgnp, -1)
-    return img
+   return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
 
 
 def get_high_photo():
-    image_url = "http://172.20.10.6/cam-hi.jpg"
-    img_response = urllib.request.urlopen(image_url)
-    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    img = cv2.imdecode(imgnp, -1)
-    return img
-
-#def get_low_photo():
-#    return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
-
-
-#def get_high_photo():
-#   return cv2.imread('cam.jpg')
+  return cv2.imread('cam.jpg')
 
 class RockPaperScissorsApp:
     def __init__(self, root):
@@ -326,6 +326,8 @@ class RockPaperScissorsApp:
         num_rounds = math.ceil(math.log2(num_players))
         bracket_frame = tk.Frame(parent)
         bracket_frame.pack(pady=20)
+
+        winners = winners.copy()
 
         current_players = players.copy()
         for round_num in range(num_rounds):
