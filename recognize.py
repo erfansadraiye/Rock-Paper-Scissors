@@ -38,8 +38,8 @@ def recognize_images(image):
     hands, img = detector.findHands(image)
     hands.sort(key=lambda x: x['center'])
     if len(hands) != 2:
-        print('Error')
-        return []
+        print('Error Hands not detected')
+        return [], []
     left_hand = hands[0]
     right_hand = hands[1]
     left_bbox = left_hand['bbox']
@@ -95,12 +95,8 @@ def recognize_images(image):
 
 if __name__ == '__main__':
     image_paths = [
-        'cam-hi1.jpg',
-        'cam-hi2.jpg',
-        'cam-hi3.jpg',
-        'cam-hi4.jpg',
-        'cam-hi5.jpg',
+        'ai1.jpg'
     ]
     for image_path in image_paths:
         img = cv2.imread(image_path)
-        print(recognize_images(img)[0])
+        print(recognize_images(img))
