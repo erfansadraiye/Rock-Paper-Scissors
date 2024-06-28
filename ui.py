@@ -45,20 +45,27 @@ def select_winner(result):
     return -1
 
 
-def get_low_photo_duo():
-   return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
+def get_low_photo():
+    image_url = "http://172.20.10.6/cam-lo.jpg"
+    img_response = urllib.request.urlopen(image_url)
+    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+    img = cv2.imdecode(imgnp, -1)
+    return img
 
-def get_low_photo_single():
-   return cv2.imread(random.choice(['rock.jpg', 'paper.jpg', 'scissors.jpg']))
 
 def get_high_photo():
-  return cv2.imread('cam.jpg')
+    image_url = "http://172.20.10.6/cam-hi.jpg"
+    img_response = urllib.request.urlopen(image_url)
+    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+    img = cv2.imdecode(imgnp, -1)
+    return img
 
-def get_high_photo_ai(filename):
-  return cv2.imread(filename)
+#def get_low_photo():
+#    return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
 
-def get_high_photo_human():
-  return cv2.imread(random.choice(['rock.jpg', 'scissors.jpg']))
+
+#def get_high_photo():
+#   return cv2.imread('cam.jpg')
 
 class RockPaperScissorsApp:
     def __init__(self, root):
@@ -186,6 +193,9 @@ class RockPaperScissorsApp:
             self.allwinners = []
 
             self.current_players = self.registered_users.copy()
+            #should be power of 2
+            if len(self.current_players) % 2 != 0:
+                self.current_players.append('Bye')
             self.open_game_window(self.current_players)
 
     def open_game_window(self, players):
@@ -213,6 +223,20 @@ class RockPaperScissorsApp:
         show_tree_button.pack(pady=20)
 
     def play_game(self, player1, player2):
+        if player1 == 'Bye':
+            self.winners.append(player2)
+            self.allwinners.append(player2)
+            self.game_index += 2
+            self.update_main_game_window()
+            return
+        elif player2 == 'Bye':
+            self.winners.append(player1)
+            self.allwinners.append(player1)
+            self.game_index += 2
+            self.update_main_game_window()
+            return
+
+
         play_game_window = tk.Toplevel(self.root)
         play_game_window.title("Game")
         play_game_window.geometry("1024x768")
@@ -257,7 +281,7 @@ class RockPaperScissorsApp:
             if not self.update_photo_flag:
                 return
             try:
-                photo = get_low_photo_duo()
+                photo = get_low_photo()
                 photo = cv2.cvtColor(photo, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(photo)
                 imgtk = ImageTk.PhotoImage(image=img)
@@ -397,7 +421,7 @@ class RockPaperScissorsApp:
             if not self.update_photo_flag:
                 return
             try:
-                photo = get_low_photo_single()
+                photo = get_low_photo()
                 resized_photo = cv2.resize(photo, (360, 240))
                 resized_photo_rgb = cv2.cvtColor(resized_photo, cv2.COLOR_BGR2RGB)
                 human_img = Image.fromarray(resized_photo_rgb)
@@ -419,7 +443,7 @@ class RockPaperScissorsApp:
         def trigger_game():
             agent = MarkovModel()
             self.update_photo_flag = False  # Stop the photo update process
-            saved_image = get_high_photo_human()
+            saved_image = get_high_photo()
             resized_image = cv2.resize(saved_image, (360, 240))
             resized_image_rgb = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
             human_img = Image.fromarray(resized_image_rgb)
@@ -549,7 +573,11 @@ class RockPaperScissorsApp:
                     player2_label.pack()
 
                 if round_num == 0:
-                    if current_players[i] in self.allwinners:
+                    if current_players[i] == 'Bye':
+                        next_round_players.append(current_players[i+1])
+                    elif current_players[i+1] == 'Bye':
+                        next_round_players.append(current_players[i])
+                    elif current_players[i] in self.allwinners:
                         next_round_players.append(current_players[i])
                     elif current_players[i+1] in self.allwinners:
                         next_round_players.append(current_players[i+1])
