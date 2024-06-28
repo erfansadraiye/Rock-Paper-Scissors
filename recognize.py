@@ -93,10 +93,31 @@ def recognize_images(image):
         return [], []
     return (left_pos, right_pos), (left_image, right_image)
 
+def recognize_one_hand(image):
+    detector = HandDetector(maxHands=1)
+    hands, img = detector.findHands(image)
+    if len(hands) == 0:
+        print('Error in catching  hand')
+        return 'NA'
+    fingers = detector.fingersUp(hands[0])
+
+
+    if np.sum(fingers) == 0 or np.sum(fingers) == 1:
+        pos = 'rock'
+
+    if np.sum(fingers) == 2 or np.sum(fingers) == 3:
+        pos = 'scissors'
+
+    if np.sum(fingers) == 4 or np.sum(fingers) == 5:
+        pos = 'paper'
+    
+    return pos
+    
+
 if __name__ == '__main__':
     image_paths = [
         'ai1.jpg'
     ]
     for image_path in image_paths:
         img = cv2.imread(image_path)
-        print(recognize_images(img))
+        print(recognize_one_hand(img))
