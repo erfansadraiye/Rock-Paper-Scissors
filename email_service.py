@@ -20,13 +20,13 @@ class EmailService:
             server.login(self.email, self.password)
         except Exception as e:
             print(e)
-        try:
-            if server is None:
-                print('could not loging to email')
-                return
-            for i, email in enumerate(self.emails):
-                msg = "From: %s\nTo: %s\nSubject: %s\n\n%s" % ( self.email, email[0], email[1], email[2])
+        if server is None:
+            print('could not loging to email')
+            return
+        for i, email in enumerate(self.emails):
+            msg = "From: %s\nTo: %s\nSubject: %s\n\n%s" % ( self.email, email[0], email[1], email[2])
+            try:
                 server.sendmail(self.email, email[0], msg)
                 print('ok the email has been sent')
-        except Exception as e:
-            print(e)
+            except Exception as e:
+                print(e)
