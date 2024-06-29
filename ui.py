@@ -1,5 +1,4 @@
 import math
-import urllib.request
 import numpy as np
 import tkinter as tk
 from tkinter import font as tkfont
@@ -155,27 +154,26 @@ def select_winner(result):
 
 base_image_url = "http://172.27.52.230"
 
-def get_low_photo():
-    image_url = f"{base_image_url}/cam-lo.jpg"
-    img_response = urllib.request.urlopen(image_url)
-    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    img = cv2.imdecode(imgnp, -1)
-    return img
+# def get_low_photo():
+#     image_url = f"{base_image_url}/cam-lo.jpg"
+#     img_response = urllib.request.urlopen(image_url)
+#     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+#     img = cv2.imdecode(imgnp, -1)
+#     return img
+#
+#
+# def get_high_photo():
+#     image_url = f"{base_image_url}/cam-hi.jpg"
+#     img_response = urllib.request.urlopen(image_url)
+#     imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
+#     img = cv2.imdecode(imgnp, -1)
+#     return img
 
+def get_low_photo():
+   return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
 
 def get_high_photo():
-    image_url = f"{base_image_url}/cam-hi.jpg"
-    img_response = urllib.request.urlopen(image_url)
-    imgnp = np.array(bytearray(img_response.read()), dtype=np.uint8)
-    img = cv2.imdecode(imgnp, -1)
-    return img
-
-#def get_low_photo():
-#    return cv2.imread(random.choice(['cam.jpg', 'cam2.jpg']))
-
-
-#def get_high_photo():
-#   return cv2.imread('cam.jpg')
+  return cv2.imread('cam.jpg')
 
 class RockPaperScissorsApp:
     def __init__(self, root):
@@ -637,7 +635,7 @@ class RockPaperScissorsApp:
                         message = f'Dear {username},\n We are sorry to inform you that you are a loser.\n' + matches_messages
                         self.email_service.add_email(self.user_emails[username], f"Game Result", message)
                 self.email_service.send_email()
-                self.email_service.clear_emails
+                self.email_service.clear_emails()
                 self.player_results.clear()
                 final_label.pack(pady=20)
 
