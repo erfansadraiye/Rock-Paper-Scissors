@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 from collections import defaultdict
 import gc
 from cvzone.HandTrackingModule import HandDetector
-
+import urllib.request
 from agent import MarkovModel
 from email_service import EmailService
 
