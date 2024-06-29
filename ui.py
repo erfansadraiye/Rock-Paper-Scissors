@@ -290,7 +290,7 @@ class RockPaperScissorsApp:
             except Exception as e:
                 print("Error in downloading live image: ", e)
             finally:
-                play_game_window.after(200, update_photo)  # Schedule the next update
+                play_game_window.after(1000, update_photo)  # Schedule the next update
 
         def countdown(count):
             if count >= 0:
@@ -422,8 +422,7 @@ class RockPaperScissorsApp:
                 return
             try:
                 photo = get_low_photo()
-                resized_photo = cv2.resize(photo, (360, 240))
-                resized_photo_rgb = cv2.cvtColor(resized_photo, cv2.COLOR_BGR2RGB)
+                resized_photo_rgb = cv2.cvtColor(photo, cv2.COLOR_BGR2RGB)
                 human_img = Image.fromarray(resized_photo_rgb)
                 human_imgtk = ImageTk.PhotoImage(image=human_img)
                 left_image_label.config(image=human_imgtk)
