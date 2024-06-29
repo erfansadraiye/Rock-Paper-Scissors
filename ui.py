@@ -431,7 +431,7 @@ class RockPaperScissorsApp:
             except Exception as e:
                 print("Error in downloading live image: ", e)
             finally:
-                play_game_window.after(200, update_photo)  # Schedule the next update
+                play_game_window.after(1000, update_photo)  # Schedule the next update
 
         def countdown(count):
             if count >= 0:
