@@ -1,5 +1,4 @@
 import math
-import random
 import urllib.request
 import numpy as np
 import tkinter as tk
@@ -8,11 +7,11 @@ from tkinter import messagebox
 import cv2
 from PIL import Image, ImageTk
 from collections import defaultdict
+import gc
+from cvzone.HandTrackingModule import HandDetector
 
-from recognize import recognize_images, recognize_one_hand
 from agent import MarkovModel
 from email_service import EmailService
-# from ai_a import EnsembleAgent
 
 import threading
 from flask import Flask, jsonify
@@ -23,6 +22,116 @@ app = Flask(__name__)
 SCISSORS = 'scissors'
 ROCK = 'rock'
 PAPER = 'paper'
+
+
+class HandRecognizer:
+
+    def __init__(self):
+        self.one_hand_detector = HandDetector(maxHands=1)
+        self.two_hand_detector = HandDetector(maxHands=2)
+
+    def recognize_images(self, image):
+        image_original = image.copy()
+        hands, img = self.two_hand_detector.findHands(image)
+        hands.sort(key=lambda x: x['center'])
+        if len(hands) != 2:
+            print('Error Hands not detected')
+            return [], []
+        left_hand = hands[0]
+        right_hand = hands[1]
+        left_bbox = left_hand['bbox']
+        right_bbox = right_hand['bbox']
+        left_image = crop_image_using_bbox(image_original, left_bbox)
+        right_image = crop_image_using_bbox(image_original, right_bbox)
+        left_rotated_image = cv2.rotate(left_image, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        right_rotated_image = cv2.rotate(right_image, cv2.ROTATE_90_CLOCKWISE)
+
+        hands, img = self.one_hand_detector.findHands(left_rotated_image)
+        if len(hands) == 0:
+            print('Error in catching left hand')
+            left_fingers = [-1, -1, -1, -1, -1]
+        else:
+            left_fingers = self.one_hand_detector.fingersUp(hands[0])
+        hands, img = self.one_hand_detector.findHands(right_rotated_image)
+        if len(hands) == 0:
+            print('Error in catching right hand')
+            right_fingers = [-1, -1, -1, -1, -1]
+        right_fingers = self.one_hand_detector.fingersUp(hands[0])
+
+        left_pos = None
+        right_pos = None
+
+        if np.sum(left_fingers) == 0 or np.sum(left_fingers) == 1:
+            left_pos = 'rock'
+        if np.sum(right_fingers) == 0 or np.sum(right_fingers) == 1:
+            right_pos = 'rock'
+
+        if np.sum(left_fingers) == 2 or np.sum(left_fingers) == 3:
+            left_pos = 'scissors'
+        if np.sum(right_fingers) == 2 or np.sum(right_fingers) == 3:
+            right_pos = 'scissors'
+
+        if np.sum(left_fingers) == 4 or np.sum(left_fingers) == 5:
+            left_pos = 'paper'
+        if np.sum(right_fingers) == 4 or np.sum(right_fingers) == 5:
+            right_pos = 'paper'
+
+        if np.sum(left_fingers) == -5:
+            left_pos = 'NA'
+            return [], []
+        if np.sum(right_fingers) == -5:
+            right_pos = 'NA'
+            return [], []
+        return (left_pos, right_pos), (left_image, right_image)
+
+    def recognize_one_hand(self, image):
+        hands, img = self.one_hand_detector.findHands(image)
+        if len(hands) == 0:
+            print('Error in catching  hand')
+            return 'NA'
+        fingers = self.one_hand_detector.fingersUp(hands[0])
+
+        if np.sum(fingers) == 0 or np.sum(fingers) == 1:
+            pos = 'rock'
+
+        if np.sum(fingers) == 2 or np.sum(fingers) == 3:
+            pos = 'scissors'
+
+        if np.sum(fingers) == 4 or np.sum(fingers) == 5:
+            pos = 'paper'
+        return pos
+
+
+def crop_image_using_bbox(img, bbox, padding=80):
+    """
+    Crop the image using a bounding box with additional padding, and ensure the crop stays within image boundaries.
+
+    :param image_path: Path to the image file.
+    :param bbox: A tuple (x_min, y_min, width, height) defining the bounding box.
+    :param padding: Additional padding to add around the bounding box. Default is 50 pixels.
+    :return: Cropped image as a NumPy array.
+    """
+    if img is None:
+        raise FileNotFoundError("The image file was not found.")
+
+    # Get image dimensions
+    img_height, img_width = img.shape[:2]
+
+    # Unpack the bounding box and apply padding
+    x_min, y_min, width, height = bbox
+    x_min_padded = max(0, x_min - padding)
+    y_min_padded = max(0, y_min - padding)
+    x_max_padded = min(img_width, x_min + width + padding)
+    y_max_padded = min(img_height, y_min + height + padding)
+
+    # Crop the image using array slicing with clipped coordinates
+    cropped_img = img[y_min_padded:y_max_padded, x_min_padded:x_max_padded]
+
+    return cropped_img
+
+
+
+
 
 
 def select_winner(result):
@@ -45,6 +154,7 @@ def select_winner(result):
     return -1
 
 base_image_url = "http://172.27.52.230"
+
 def get_low_photo():
     image_url = f"{base_image_url}/cam-lo.jpg"
     img_response = urllib.request.urlopen(image_url)
@@ -290,7 +400,7 @@ class RockPaperScissorsApp:
             except Exception as e:
                 print("Error in downloading live image: ", e)
             finally:
-                play_game_window.after(1000, update_photo)  # Schedule the next update
+                play_game_window.after(200, update_photo)  # Schedule the next update
 
         def countdown(count):
             if count >= 0:
@@ -311,7 +421,7 @@ class RockPaperScissorsApp:
 
             outcome_label.config(text=f"Processing...")
 
-            result, images = recognize_images(saved_image)
+            result, images = hand_recognizer.recognize_images(saved_image)
             if len(images) == 2:
                 left_image, right_image = images
                 # Display left and right images
@@ -345,7 +455,7 @@ class RockPaperScissorsApp:
                 play_game_window.after(3000, lambda: [play_game_window.destroy(), self.update_main_game_window()])
             else:
                 outcome_label.config(text="Image was not good. Please try again...")
-                
+            gc.collect()
 
         update_photo()
         self.current_countdown = countdown
@@ -430,7 +540,7 @@ class RockPaperScissorsApp:
             except Exception as e:
                 print("Error in downloading live image: ", e)
             finally:
-                play_game_window.after(1000, update_photo)  # Schedule the next update
+                play_game_window.after(200, update_photo)  # Schedule the next update
 
         def countdown(count):
             if count >= 0:
@@ -449,7 +559,7 @@ class RockPaperScissorsApp:
             human_imgtk = ImageTk.PhotoImage(image=human_img)
             left_image_label.config(image=human_imgtk)
             left_image_label.image = human_imgtk  # Keep a reference to avoid garbage collection
-            human_choice = recognize_one_hand(saved_image)
+            human_choice = hand_recognizer.recognize_one_hand(saved_image)
 
             outcome_label.config(text=f"Processing...")
 
@@ -490,6 +600,7 @@ class RockPaperScissorsApp:
                     outcome_label.config(text=f"AI wins!")
                     ai_wins[0] += 1
                 update_game_results()
+            gc.collect()
 
         update_photo()
         self.current_countdown = countdown
@@ -599,6 +710,7 @@ def start_countdown():
     return jsonify({'status': 'countdown started'})
 
 
+hand_recognizer = HandRecognizer()
 root = tk.Tk()
 app = RockPaperScissorsApp(root)
 root.geometry("800x600")
