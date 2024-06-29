@@ -334,18 +334,19 @@ class RockPaperScissorsApp:
 
     def play_game(self, player1, player2):
         if player1 == 'Bye':
-            self.winners.append(player2)
-            self.allwinners.append(player2)
-            self.game_index += 2
-            self.update_main_game_window()
-            return
+            winner = player2
+            loser = player1
         elif player2 == 'Bye':
-            self.winners.append(player1)
-            self.allwinners.append(player1)
+            winner = player1
+            loser = player2
+        if player1 == 'Bye' or player2 == 'Bye':
+            self.winners.append(winner)
+            self.allwinners.append(winner)
+            self.player_results[player1].append((winner, loser))
+            self.player_results[player2].append((winner, loser))
             self.game_index += 2
             self.update_main_game_window()
             return
-
 
         play_game_window = tk.Toplevel(self.root)
         play_game_window.title("Game")
@@ -613,6 +614,8 @@ class RockPaperScissorsApp:
         else:
             if len(self.winners) > 1:
                 self.current_players = self.winners.copy()
+                if len(self.current_players) % 2 == 1:
+                    self.current_players.append("Bye")
                 self.winners = []
                 self.game_index = 0
                 self.current_game_label.config(
@@ -662,7 +665,8 @@ class RockPaperScissorsApp:
 
             round_label = tk.Label(round_frame, text=f"Round {round_num + 1}", font=self.label_font)
             round_label.pack()
-
+            if len(current_players) % 2 == 1:
+                current_players.append("Bye")
             next_round_players = []
             for i in range(0, len(current_players), 2):
                 match_frame = tk.Frame(round_frame)
@@ -682,18 +686,21 @@ class RockPaperScissorsApp:
                     player2_label = tk.Label(match_frame, text="Bye", font=self.label_font)
                     player2_label.pack()
 
-                if round_num == 0:
-                    if current_players[i] == 'Bye':
-                        next_round_players.append(current_players[i+1])
-                    elif current_players[i+1] == 'Bye':
-                        next_round_players.append(current_players[i])
-                    elif current_players[i] in self.allwinners:
-                        next_round_players.append(current_players[i])
-                    elif current_players[i+1] in self.allwinners:
-                        next_round_players.append(current_players[i+1])
+                if round_num < num_rounds:
+                    first_player = current_players[i]
+                    second_player = current_players[i + 1]
+                    if first_player == 'Bye':
+                        next_round_players.append(second_player)
+                    elif second_player == 'Bye':
+                        next_round_players.append(first_player)
                     else:
-                        next_round_players.append(
-                            f"Winner of {current_players[i]} vs {current_players[i + 1] if i + 1 < len(current_players) else 'Bye'}")
+                        if (first_player, second_player) in self.player_results[first_player]:
+                            next_round_players.append(first_player)
+                        elif (second_player, first_player) in self.player_results[second_player]:
+                            next_round_players.append(second_player)
+                        else:
+                            next_round_players.append(
+                                f"Winner of {first_player} vs {second_player if i + 1 < len(current_players) else 'Bye'}")
                 else:
                     next_round_players.append(winners.pop(
                         0) if winners else f"Winner of {current_players[i]} vs {current_players[i + 1] if i + 1 < len(current_players) else 'Bye'}")
